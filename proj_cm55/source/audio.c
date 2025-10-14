@@ -40,6 +40,8 @@
 * Header Files
 *******************************************************************************/
 
+#include "cy_pdl.h"
+#include "cybsp.h"
 #include "audio.h"
 #include "cy_syslib.h"
 #include <time.h>
@@ -59,20 +61,20 @@
 /*****************************************************************************
  * Macros
  *****************************************************************************/
-#define SYSTICK_MAX_CNT (0xFFFFFF)
+#define SYSTICK_MAX_CNT                         (0xFFFFFF)
 
-#define PDM_CHANNEL 3
+#define PDM_CHANNEL                             (3u)
 /* Define how many samples in a frame */
-#define FRAME_SIZE                  (1024)
+#define FRAME_SIZE                              (1024)
 
 /* Desired sample rate. Typical values: 8/16/22.05/32/44.1/48kHz */
-#define SAMPLE_RATE_HZ              16000u
+#define SAMPLE_RATE_HZ                          16000u
 
 /* Decimation Rate of the PDM/PCM block. Typical value is 64 */
-#define DECIMATION_RATE             64u
+#define DECIMATION_RATE                         64u
 
-#define DETECTCOUNT                 10
-#define LED_STOP_COUNT              500
+#define DETECTCOUNT                             10
+#define LED_STOP_COUNT                          500
 
 /* PDM PCM hardware FIFO size */
 #define HW_FIFO_SIZE                            (64u)
@@ -90,7 +92,7 @@
  * with data at a higher amplitude than the microphone captures.
  * Note: If you use the same board for recording training data and
  * deployment of your own ML model set this to 1.0. */
-#define DIGITAL_BOOST_FACTOR                    10.0f
+#define DIGITAL_BOOST_FACTOR                    1.0f
 
 /* Specifies the dynamic range in bits.
  * PCM word length, see the A/D specific documentation for valid ranges. */
@@ -98,10 +100,6 @@
 
 /* Converts given audio sample into range [-1,1] */
 #define SAMPLE_NORMALIZE(sample)                (((float) (sample)) / (float) (1 << (AUIDO_BITS_PER_SAMPLE - 1)))
-
-/* PDM/PCM Pins */
-#define PDM_DATA                    P8_6
-#define PDM_CLK                     P8_5
 
 /* PDM PCM interrupt configuration parameters */
 const cy_stc_sysint_t PDM_IRQ_cfg =
@@ -156,7 +154,6 @@ void systick_isr1(void)
     tick1++;
 }
 
-
 /*******************************************************************************
 * Function Name: get_time_from_millisec_audio
 ********************************************************************************
@@ -199,6 +196,13 @@ cy_rslt_t audio_init(void)
 {
     cy_rslt_t result;
 
+    /* Set up pointers to two buffers to implement a ping-pong buffer system.
+     * One gets filled by the PDM while the other can be processed. */
+    memset(audio_buffer0, 0, FRAME_SIZE*sizeof(int16_t));
+    memset(audio_buffer1, 0, FRAME_SIZE*sizeof(int16_t));
+    active_rx_buffer = audio_buffer0;
+    full_rx_buffer = audio_buffer1;
+
     /* Initialize PDM PCM block */
     result = Cy_PDM_PCM_Init(CYBSP_PDM_HW, &CYBSP_PDM_config);
     if(CY_PDM_PCM_SUCCESS != result)
@@ -206,9 +210,16 @@ cy_rslt_t audio_init(void)
         return result;
     }
 
+    Cy_PDM_PCM_Channel_Enable(CYBSP_PDM_HW, PDM_CHANNEL);
     /* Initialize and enable PDM PCM channel 3 -Right */
     Cy_PDM_PCM_Channel_Init(CYBSP_PDM_HW, &channel_3_config, PDM_CHANNEL);
-    Cy_PDM_PCM_Channel_Enable(CYBSP_PDM_HW, PDM_CHANNEL);
+
+    /* Set the gain as per the model. */
+    #ifdef ALARM_MODEL
+    Cy_PDM_PCM_SetGain(CYBSP_PDM_HW, PDM_CHANNEL, CY_PDM_PCM_SEL_GAIN_23DB);
+    #else
+    Cy_PDM_PCM_SetGain(CYBSP_PDM_HW, PDM_CHANNEL, CY_PDM_PCM_SEL_GAIN_5DB);
+    #endif
 
     /* An interrupt is registered for right channel, clear and set masks for it. */
     Cy_PDM_PCM_Channel_ClearInterrupt(CYBSP_PDM_HW, PDM_CHANNEL, CY_PDM_PCM_INTR_MASK);
@@ -266,14 +277,6 @@ void audio_task(void *pvParameters)
     
     /* Initialize DEEPCRAFT pre-processing library */
     IMAI_AED_init();
-    
-    /* If the model selected is for baby cry detection, set the confidence threshold to 0.7 */
-    #ifdef BABYCRY_MODEL
-    struct PP_config postprocessing;
-    postprocessing.confidence = 0.7;
-    IMAI_AED_sensitivity(postprocessing);
-    #endif
-    
     
     result = audio_init();
     if(result != 0)
@@ -442,7 +445,7 @@ static void pdm_pcm_event_handler(void)
     }
 
     /* Clear the remaining interrupts */
-    if((CY_PDM_PCM_INTR_RX_FIR_OVERFLOW | CY_PDM_PCM_INTR_RX_OVERFLOW|
+    if((CY_PDM_PCM_INTR_RX_FIR_OVERFLOW | CY_PDM_PCM_INTR_RX_OVERFLOW |
             CY_PDM_PCM_INTR_RX_IF_OVERFLOW | CY_PDM_PCM_INTR_RX_UNDERFLOW) & intr_status)
     {
         Cy_PDM_PCM_Channel_ClearInterrupt(CYBSP_PDM_HW, PDM_CHANNEL, CY_PDM_PCM_INTR_MASK);

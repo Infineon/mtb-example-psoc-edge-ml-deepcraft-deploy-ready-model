@@ -51,9 +51,6 @@
 #ifdef BABYCRY_MODEL
 #include "ready_models/babycry_lib.h"
 #endif
-#ifdef SIREN_MODEL
-#include "ready_models/siren_lib.h"
-#endif
 
 #include "stdio.h"
 

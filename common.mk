@@ -42,7 +42,7 @@ TOOLCHAIN=GCC_ARM
 
 # Toolchains supported by this code example. See README.md file.
 # This is used by automated build systems to identify the supported toolchains. 
-MTB_SUPPORTED_TOOLCHAINS?=GCC_ARM ARM LLVM_ARM
+MTB_SUPPORTED_TOOLCHAINS=GCC_ARM ARM LLVM_ARM
 
 # Default build configuration. Options include:
 #
@@ -53,8 +53,6 @@ MTB_SUPPORTED_TOOLCHAINS?=GCC_ARM ARM LLVM_ARM
 # If CONFIG is manually edited, ensure to update or regenerate 
 # launch configurations for your IDE.
 CONFIG=Debug
-
-MTB_SUPPORTED_TOOLCHAINS=GCC_ARM ARM LLVM_ARM
 
 ifeq ($(TOOLCHAIN),GCC_ARM)
     ifeq ($(CONFIG),Release)
