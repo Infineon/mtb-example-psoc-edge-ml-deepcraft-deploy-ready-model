@@ -9,33 +9,33 @@
  *
  *
  *******************************************************************************
-* (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
-* Technologies AG. All rights reserved.
-* This software, associated documentation and materials ("Software") is
-* owned by Infineon Technologies AG or one of its affiliates ("Infineon")
-* and is protected by and subject to worldwide patent protection, worldwide
-* copyright laws, and international treaty provisions. Therefore, you may use
-* this Software only as provided in the license agreement accompanying the
-* software package from which you obtained this Software. If no license
-* agreement applies, then any use, reproduction, modification, translation, or
-* compilation of this Software is prohibited without the express written
-* permission of Infineon.
-* 
-* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
-* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-* INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
-* THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
-* SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
-* Infineon reserves the right to make changes to the Software without notice.
-* You are responsible for properly designing, programming, and testing the
-* functionality and safety of your intended application of the Software, as
-* well as complying with any legal requirements related to its use. Infineon
-* does not guarantee that the Software will be free from intrusion, data theft
-* or loss, or other breaches ("Security Breaches"), and Infineon shall have
-* no liability arising out of any Security Breaches. Unless otherwise
-* explicitly approved by Infineon, the Software may not be used in any
-* application where a failure of the Product or any consequences of the use
-* thereof can reasonably be expected to result in personal injury.
+ * (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
+ * Technologies AG. All rights reserved.
+ * This software, associated documentation and materials ("Software") is
+ * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
+ * and is protected by and subject to worldwide patent protection, worldwide
+ * copyright laws, and international treaty provisions. Therefore, you may use
+ * this Software only as provided in the license agreement accompanying the
+ * software package from which you obtained this Software. If no license
+ * agreement applies, then any use, reproduction, modification, translation, or
+ * compilation of this Software is prohibited without the express written
+ * permission of Infineon.
+ *
+ * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+ * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
+ * THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
+ * SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
+ * Infineon reserves the right to make changes to the Software without notice.
+ * You are responsible for properly designing, programming, and testing the
+ * functionality and safety of your intended application of the Software, as
+ * well as complying with any legal requirements related to its use. Infineon
+ * does not guarantee that the Software will be free from intrusion, data theft
+ * or loss, or other breaches ("Security Breaches"), and Infineon shall have
+ * no liability arising out of any Security Breaches. Unless otherwise
+ * explicitly approved by Infineon, the Software may not be used in any
+ * application where a failure of the Product or any consequences of the use
+ * thereof can reasonably be expected to result in personal injury.
  *******************************************************************************/
 
 /*******************************************************************************
@@ -79,8 +79,7 @@ cy_stc_scb_i2c_context_t CYBSP_I2C_CONTROLLER_context;
 
 volatile long tick1 = 0;
 
-uint8_t send_data = 0;
-uint8_t IMU_FLAG = 0;
+volatile uint8_t send_data = 0;
 
 /* Motion sensor task handle */
 static TaskHandle_t motion_sensor_task_handle;
@@ -119,7 +118,9 @@ void systick_isr1(void)
     if (send_data == IMU_SAMPLES_RATE)
     {
         send_data = 0;
-        IMU_FLAG = 1;
+        /* Send a task notification to the task */
+        vTaskNotifyGiveFromISR(motion_sensor_task_handle, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
 
@@ -264,6 +265,7 @@ static void task_motion(void* pvParameters)
     /* LED variables */
     static int led_off = 0;
     static int led_on = 0;
+    static int16_t success_flag = 0;
     
     int label_scores[IMAI_DATA_OUT_COUNT];
     static int prediction_count = 0;
@@ -282,12 +284,9 @@ static void task_motion(void* pvParameters)
 
     for(;;)
     {
-        while (IMU_FLAG == 0)
-        {
-            
-        }
-        
-        IMU_FLAG = 0;
+        /* Wait here until ISR notifies us */
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
         /* Get IMU data */        
         /* Read x, y, z components of acceleration */
         result =  mtb_bmi270_read(&bmi270, &bmi270_data);
@@ -298,13 +297,17 @@ static void task_motion(void* pvParameters)
 
         if ((result == BMI2_OK) && (bmi270_data.sensor_data.status & BMI2_DRDY_ACC))
         {
+#ifdef USE_SENSOR_REMAPPING
+        /* Remapping the accelerometer data is done as per the model */
+        imu_remap_sensor_orientation(&(bmi270_data.sensor_data.acc));
+#endif
             float data_in[IMAI_DATA_IN_COUNT] =
             {
                 (float) (bmi270_data.sensor_data.acc.y / 4096.0f),
                 (float) (bmi270_data.sensor_data.acc.x / 4096.0f),
                 (float) (-bmi270_data.sensor_data.acc.z / 4096.0f),
             };
-
+            
             /* pass IMU data to model's enqueue function */
             result = IMAI_FED_enqueue(data_in);
 
@@ -312,7 +315,7 @@ static void task_motion(void* pvParameters)
             switch(IMAI_FED_dequeue(label_scores))
             {
                 case IMAI_RET_SUCCESS:
-                    static int16_t success_flag = 1;
+                    success_flag = 0;
                     prediction_count += 1;
                     if (label_scores[1] == 1)
                     {
@@ -364,6 +367,29 @@ static void task_motion(void* pvParameters)
         }
     }
 }
+
+#ifdef USE_SENSOR_REMAPPING
+/*******************************************************************************
+* Function Name: imu_remap_sensor_orientation
+********************************************************************************
+* Summary:
+* Remapping the sensor data to match with CY8CKIT-062S2-AI orientation.
+*
+* Parameters:
+* data: pointer IMU Sensors data
+*
+* Return:
+* None
+*
+*******************************************************************************/
+void imu_remap_sensor_orientation(struct bmi2_sens_axes_data *data)
+{
+    /* remapping the data */ 
+    data->x = -(data->x);
+    data->y = -(data->y);
+}
+#endif
+
 /*******************************************************************************
  * Function Name: create_motion_sensor_task
  ********************************************************************************
@@ -390,3 +416,4 @@ cy_rslt_t create_motion_sensor_task(void)
 }
 
 /* [] END OF FILE */
+

@@ -25,7 +25,7 @@ Once CM55 core is enabled it configures system clocks, pins, clock to peripheral
 
 ### Audio detection
 
-There are four models that detect different sounds such as baby cry, cough, and alarm. The models use data from pulse-density modulation (PDM) to pulse-code modulation (PCM), which is then sent to the model for detection.
+There are five models that detect different sounds such as baby cry, cough, alarm, and siren. The models use data from pulse-density modulation (PDM) to pulse-code modulation (PCM), which is then sent to the model for detection.
 
 The data consists of PDM/PCM data. The PDM/PCM is sampled at 16 kHz and an interrupt is generated after 1024 samples are collected. After 1024 samples are collected, the data is fed to the DEEPCRAFT&trade; model through the `IMAI_AED_enqueue` function. The `IMAI_AED_dequeue` function is used to read the model output and results are displayed on the UART terminal.
 
@@ -34,6 +34,8 @@ The data consists of PDM/PCM data. The PDM/PCM is sampled at 16 kHz and an inter
 - **Factory Alarm Detection:** This model gathers PDM/PCM audio data to detect alarm (for example, fire alarm) audio
 
 - **Baby Cry Detection:** This model gathers PDM/PCM audio data to detect baby crying audio
+
+- **Siren Detection:** This model gathers PDM/PCM audio data to detect siren audio
 
 - **Direction of Arrival (Sound):** This model uses the sample audio data detect the direction of sound source
 

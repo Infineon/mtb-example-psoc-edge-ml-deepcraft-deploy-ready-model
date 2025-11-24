@@ -7,33 +7,33 @@
 * Related Document : See README.md
 *
 *****************************************************************************
-* (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
-* Technologies AG. All rights reserved.
-* This software, associated documentation and materials ("Software") is
-* owned by Infineon Technologies AG or one of its affiliates ("Infineon")
-* and is protected by and subject to worldwide patent protection, worldwide
-* copyright laws, and international treaty provisions. Therefore, you may use
-* this Software only as provided in the license agreement accompanying the
-* software package from which you obtained this Software. If no license
-* agreement applies, then any use, reproduction, modification, translation, or
-* compilation of this Software is prohibited without the express written
-* permission of Infineon.
-* 
-* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
-* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-* INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
-* THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
-* SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
-* Infineon reserves the right to make changes to the Software without notice.
-* You are responsible for properly designing, programming, and testing the
-* functionality and safety of your intended application of the Software, as
-* well as complying with any legal requirements related to its use. Infineon
-* does not guarantee that the Software will be free from intrusion, data theft
-* or loss, or other breaches ("Security Breaches"), and Infineon shall have
-* no liability arising out of any Security Breaches. Unless otherwise
-* explicitly approved by Infineon, the Software may not be used in any
-* application where a failure of the Product or any consequences of the use
-* thereof can reasonably be expected to result in personal injury.
+ * (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
+ * Technologies AG. All rights reserved.
+ * This software, associated documentation and materials ("Software") is
+ * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
+ * and is protected by and subject to worldwide patent protection, worldwide
+ * copyright laws, and international treaty provisions. Therefore, you may use
+ * this Software only as provided in the license agreement accompanying the
+ * software package from which you obtained this Software. If no license
+ * agreement applies, then any use, reproduction, modification, translation, or
+ * compilation of this Software is prohibited without the express written
+ * permission of Infineon.
+ *
+ * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+ * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
+ * THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
+ * SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
+ * Infineon reserves the right to make changes to the Software without notice.
+ * You are responsible for properly designing, programming, and testing the
+ * functionality and safety of your intended application of the Software, as
+ * well as complying with any legal requirements related to its use. Infineon
+ * does not guarantee that the Software will be free from intrusion, data theft
+ * or loss, or other breaches ("Security Breaches"), and Infineon shall have
+ * no liability arising out of any Security Breaches. Unless otherwise
+ * explicitly approved by Infineon, the Software may not be used in any
+ * application where a failure of the Product or any consequences of the use
+ * thereof can reasonably be expected to result in personal injury.
 *****************************************************************************/
 
 /*******************************************************************************
@@ -124,7 +124,7 @@ void get_time_from_millisec_radar(unsigned long milliseconds, char* output);
 ********************************************************************************/
 cy_en_scb_spi_status_t init_status;
 cy_stc_scb_spi_context_t SPI_context;
-static volatile bool data_available = false;
+
 cy_stc_sysint_t irq_cfg;
 xensiv_bgt60trxx_mtb_t sensor;
 
@@ -277,27 +277,25 @@ void radar_task(void *pvParameters)
         CY_ASSERT(0);
     }
 
-    for(;;)
+    for (;;)
     {
-        if (data_available == true)
+        /* Wait here until ISR notifies us */
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    
+        if (xensiv_bgt60trxx_get_fifo_data(&sensor.dev, bgt60_buffer, NUM_SAMPLES_PER_FRAME) == XENSIV_BGT60TRXX_STATUS_OK)
         {
-            data_available = false;
-            if (xensiv_bgt60trxx_get_fifo_data(&sensor.dev, bgt60_buffer, NUM_SAMPLES_PER_FRAME) == XENSIV_BGT60TRXX_STATUS_OK)
-            {
-                deinterleave_antennas(bgt60_buffer);
-                /* Tell processing task to take over */
-                xTaskNotifyGive(processing_task_handler);
-            }
-            else
-            {
-                printf ("Radar error. Check SPI configuration \r\n");
-                  CY_ASSERT(0);
-            }    
+            deinterleave_antennas(bgt60_buffer);
+            /* Tell processing task to take over */
+            xTaskNotifyGive(processing_task_handler);
         }
+        else
+        {
+            printf ("Radar error. Check SPI configuration \r\n");
+            CY_ASSERT(0);
+        } 
     }
 }
      
-
 
 /*******************************************************************************
 * Function Name: processing_task
@@ -418,7 +416,6 @@ void processing_task(void *pvParameters)
         }
     }
 }
-
 
 
 /*******************************************************************************
@@ -543,10 +540,16 @@ static int32_t radar_init(void)
 *******************************************************************************/
 void xensiv_bgt60trxx_interrupt_handler(void)
 {
-    data_available = true;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;   
+     
     Cy_GPIO_ClearInterrupt(CYBSP_RADAR_INT_PORT, CYBSP_RADAR_INT_NUM);
     NVIC_ClearPendingIRQ(irq_cfg.intrSrc);
+
+    /* Send a notification to the task */
+    vTaskNotifyGiveFromISR(radar_task_handler, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
+
 
 /*******************************************************************************
  * Function Name: create_radar_task

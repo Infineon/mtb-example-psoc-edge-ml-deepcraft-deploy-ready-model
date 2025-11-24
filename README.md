@@ -1,26 +1,27 @@
 # PSOC&trade; Edge MCU: DEEPCRAFT&trade; Ready Model deployment
 
-This code example demonstrates how to integrate a Ready Model library from the [DEEPCRAFT&trade; Studio](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-studio) on ModusToolbox&trade;. The code example includes six different models, where four models detect different sounds:
+This code example demonstrates how to integrate a Ready Model library from the [DEEPCRAFT&trade; Studio](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-studio) on ModusToolbox&trade;. The code example includes seven different models, where five models detect different sounds:
 - [Baby Cry Detection](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-baby-cry-detection)
 - [Cough Detection](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-cough-detection)
 - [Factory Alarm Detection](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-factory-alarm-detection)
 - [Direction of Arrival (Sound)](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-direction-of-arrival-Sound)
+- [Siren Detection](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-siren-detection)
 
 These models use data from pulse-density modulation (PDM) to pulse-code modulation (PCM), which is then sent to the model for detection.
 
-The fifth model, [Gesture Classification](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-gesture-classification), detects hand gestures using data from the XENSIV&trade; radar sensor and this is applicable only for KIT_PSE84_AI kit.
+The sixth model, [Gesture Classification](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-gesture-classification), detects hand gestures using data from the XENSIV&trade; radar sensor and this is applicable only for KIT_PSE84_AI kit.
 
-The sixth model, [Fall Detection](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-fall-detection), use the accelerometer data from the BMI270 sensor, which is then sent to the model for detection.
+The seventh model, [Fall Detection](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-fall-detection), use the accelerometer data from the BMI270 sensor, which is then sent to the model for detection.
 
 Pre-trained models that are ready for production, referred to as "Ready Models," can be found on the [DEEPCRAFT™ Ready Models](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models). These models, when deployed on a device, are intended specifically for testing purposes and come with a limited number of inferences.
 
-> **Note:** This version of the code example supports only quantized models (INT8x8).
+> **Note:** This version of the code example supports only quantized models (INT8x8) for all models except the Siren detection model.
 
 This code example has a three project structure: CM33 secure, CM33 non-secure, and CM55 projects. All three projects are programmed to the external QSPI flash and executed in Execute in Place (XIP) mode. Extended boot launches the CM33 secure project from a fixed location in the external flash, which then configures the protection settings and launches the CM33 non-secure application. Additionally, CM33 non-secure application enables CM55 CPU and launches the CM55 application.
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-ml-deepcraft-deploy-ready-model)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzdWRhcnNhbmFtc2EiLCJEb2MgdmVyc2lvbiI6IjEuMi4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJQU09DIn0=)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzYXNoaXJla2hhLnN1ZGFyc2FuYW1AaW5maW5lb24uY29tIiwiRG9jIHZlcnNpb24iOiIxLjMuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
 
 See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
@@ -43,7 +44,6 @@ See the [Design and implementation](docs/design_and_implementation.md) for the f
 > **Notes:**
 - IAR is not supported by the TensorFlow Lite for Microcontrollers (TFLM) library
 - This code example fails to build in RELEASE mode with the GCC_ARM toolchain v14.2.1 as it does not recognize some of the Helium instructions of the CMSIS-DSP library. This issue is not present in the ARM&reg; Compiler for Embedded (armclang)
-- In this version of the CE, `FALLDETECTION_MODEL` is supported only in GCC_ARM toolchain v14.2.1
 
 
 ## Supported kits (make variable 'TARGET')
@@ -90,9 +90,11 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
    Cough Detection      | `COUGH_MODEL`
    Factory Alarm Detection      | `ALARM_MODEL`
    Baby Cry Detection   | `BABYCRY_MODEL`
-   Gesture Classification    | `GESTURE_MODEL`
+   Siren Detection      | `SIREN_MODEL`
    Direction of Arrival (Sound) | `DIRECTIONOFARRIVAL_MODEL`
+   Gesture Classification    | `GESTURE_MODEL`
    Fall Detection       | `FALLDETECTION_MODEL`
+   
 
 > **Note 1:** By default, `BABYCRY_MODEL` is selected.
 <br>
@@ -107,7 +109,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
 2. Open a terminal program and select the KitProg3 COM port. Set the serial port parameters to 8N1 and 115200 baud
 
-3. After programming, the application starts automatically. Confirm that "DEEPCRAFT Ready Model: babycry" is displayed on the UART terminal
+3. After programming, the application starts automatically. Confirm that "DEEPCRAFT Ready Model: baby_cry" is displayed on the UART terminal
 
    **Figure 1. Terminal output on program startup for Baby Cry Detection**
 
@@ -147,9 +149,9 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
    Kit  |  Available models
    :-------- | :-------------
-   `KIT_PSE84_AI` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Gesture Classification, Direction of Arrival (Sound), Fall Detection
-   `KIT_PSE84_EVAL_EPC2` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Direction of Arrival (Sound), Fall Detection
-   `KIT_PSE84_EVAL_EPC4` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Direction of Arrival (Sound), Fall Detection
+   `KIT_PSE84_AI` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Gesture Classification, Fall Detection, 
+   `KIT_PSE84_EVAL_EPC2` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Fall Detection
+   `KIT_PSE84_EVAL_EPC4` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Fall Detection
 
    <br>
 
@@ -182,6 +184,7 @@ Document title: *CE242030* – *PSOC&trade; Edge MCU: DEEPCRAFT&trade; Ready Mod
  1.0.0   | New code example
  1.1.0   | Added Direction of Arrival (Sound) and Fall Detection models
  1.2.0   | Update the PDM mic settings
+ 1.3.0   | Added Siren Detection model <br> Added ARM and LLVM_ARM support for Fall Detection model
 
 <br>
 
