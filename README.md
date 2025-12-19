@@ -21,7 +21,7 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-ml-deepcraft-deploy-ready-model)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzYXNoaXJla2hhLnN1ZGFyc2FuYW1AaW5maW5lb24uY29tIiwiRG9jIHZlcnNpb24iOiIxLjMuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzYXNoaXJla2hhLnN1ZGFyc2FuYW1AaW5maW5lb24uY29tIiwiRG9jIHZlcnNpb24iOiIxLjMuMSIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
 
 See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
@@ -137,7 +137,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
    <br>
 
-7. For Fall Detection, generate a physical fall for detection. **USER LED 1** turns **ON** when fall is detected
+7. For Fall Detection, generate a physical fall for detection. After falling down, please stay in the same position for approximately 10 seconds to detect the fall. The **USER LED 1** turns **ON** when fall is detected
 
    > **Note:** In the reference video, the PSOC&trade; Edge AI kit is powered through an external battery pack instead of USB
 
@@ -185,6 +185,7 @@ Document title: *CE242030* – *PSOC&trade; Edge MCU: DEEPCRAFT&trade; Ready Mod
  1.1.0   | Added Direction of Arrival (Sound) and Fall Detection models
  1.2.0   | Update the PDM mic settings
  1.3.0   | Added Siren Detection model <br> Added ARM and LLVM_ARM support for Fall Detection model
+ 1.3.1   | Minor README update
 
 <br>
 
