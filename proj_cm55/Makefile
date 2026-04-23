@@ -6,7 +6,7 @@
 # Makefile for configuring the Cortex-M55 core project
 #
 ################################################################################
-# (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
+# (c) 2025-2026, Infineon Technologies AG, or an affiliate of Infineon
 # Technologies AG. All rights reserved.
 # This software, associated documentation and materials ("Software") is
 # owned by Infineon Technologies AG or one of its affiliates ("Infineon")
@@ -43,13 +43,13 @@ include ../common.mk
 
 # model selection
 
-# For KIT_PSE84_EVAL_EPC2, KIT_PSE84_EVAL_EPC4 and KIT_PSE84_AI below models are supported.
+# For KIT_PSE84_EVAL_EPC2, KIT_PSE84_EVAL_EPC4, KIT_PSE84_AI and KIT_PSE84_HMI below models are supported.
 # COUGH_MODEL
 # ALARM_MODEL
 # BABYCRY_MODEL
 # DIRECTIONOFARRIVAL_MODEL
-# FALLDETECTION_MODEL
-# GESTURE_MODEL (For KIT_PSE84_AI only)
+# FALLDETECTION_MODEL 
+# GESTURE_MODEL (For KIT_PSE84_AI and KIT_PSE84_HMI only)
 # SIREN_MODEL
 
 MODEL_SELECTION = BABYCRY_MODEL
@@ -64,6 +64,13 @@ endif
 ifeq (,$(filter $(TARGET),APP_KIT_PSE84_AI))
 else
     ifeq (,$(filter $(strip $(MODEL_SELECTION)),COUGH_MODEL ALARM_MODEL BABYCRY_MODEL GESTURE_MODEL DIRECTIONOFARRIVAL_MODEL FALLDETECTION_MODEL SIREN_MODEL))
+        $(error Invalid MODEL_SELECTION "$(MODEL_SELECTION)" for TARGET=$(TARGET))
+    endif
+endif
+
+ifeq (,$(filter $(TARGET),APP_KIT_PSE84_HMI))
+else
+    ifeq (,$(filter $(strip $(MODEL_SELECTION)),COUGH_MODEL ALARM_MODEL BABYCRY_MODEL GESTURE_MODEL DIRECTIONOFARRIVAL_MODEL SIREN_MODEL))
         $(error Invalid MODEL_SELECTION "$(MODEL_SELECTION)" for TARGET=$(TARGET))
     endif
 endif
@@ -240,6 +247,10 @@ ifeq ($(SENSOR_REMAPPING),ENABLED)
 DEFINES+=USE_SENSOR_REMAPPING
 endif
 
+# Check which kit is being used
+ifeq (APP_KIT_PSE84_HMI, $(TARGET))
+DEFINES+=USE_KIT_PSE84_HMI
+endif
 
 # Select softfp or hardfp floating point. Default is softfp.
 VFP_SELECT+=hardfp
@@ -248,7 +259,8 @@ VFP_SELECT+=hardfp
 #
 # NOTE: Includes and defines should use the INCLUDES and DEFINES variable
 # above.
-CFLAGS+=
+# CFLAG is added to avoid warning from sensor-dsp library fetched by xensiv-radar-presence library
+CFLAGS+=-fno-finite-math-only
 
 # Additional / custom C++ compiler flags.
 #

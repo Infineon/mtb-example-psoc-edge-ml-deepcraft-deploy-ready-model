@@ -9,7 +9,7 @@ This code example demonstrates how to integrate a Ready Model library from the [
 
 These models use data from pulse-density modulation (PDM) to pulse-code modulation (PCM), which is then sent to the model for detection.
 
-The sixth model, [Gesture Classification](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-gesture-classification), detects hand gestures using data from the XENSIV&trade; radar sensor and this is applicable only for KIT_PSE84_AI kit.
+The sixth model, [Gesture Classification](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-gesture-classification), detects hand gestures using data from the XENSIV&trade; radar sensor and this is applicable only for KIT_PSE84_AI and KIT_PSE84_HMI kits.
 
 The seventh model, [Fall Detection](https://www.infineon.com/design-resources/embedded-software/deepcraft-edge-ai-solutions/deepcraft-ready-models/deepcraft-ready-model-for-fall-detection), use the accelerometer data from the BMI270 sensor, which is then sent to the model for detection.
 
@@ -18,17 +18,18 @@ Pre-trained models that are ready for production, referred to as "Ready Models,"
 > **Note:** This version of the code example supports only quantized models (INT8x8) for all models except the Siren detection model.
 
 This code example has a three project structure: CM33 secure, CM33 non-secure, and CM55 projects. All three projects are programmed to the external QSPI flash and executed in Execute in Place (XIP) mode. Extended boot launches the CM33 secure project from a fixed location in the external flash, which then configures the protection settings and launches the CM33 non-secure application. Additionally, CM33 non-secure application enables CM55 CPU and launches the CM55 application.
+> **Note:** On the KIT_PSE84_HMI, all three projects are programmed to the external OSPI flash instead of QSPI.
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-ml-deepcraft-deploy-ready-model)
 
-[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzYXNoaXJla2hhLnN1ZGFyc2FuYW1AaW5maW5lb24uY29tIiwiRG9jIHZlcnNpb24iOiIxLjMuMSIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzYXNoaXJla2hhLnN1ZGFyc2FuYW1AaW5maW5lb24uY29tIiwiRG9jIHZlcnNpb24iOiIxLjQuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
 
 See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
 
 ## Requirements
 
-- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.6 or later (tested with v3.6)
+- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.7 or later (tested with v3.7)
 - Board support package (BSP) minimum required version: 1.0.0
 - Programming language: C
 - Associated parts: All [PSOC&trade; Edge MCU](https://www.infineon.com/products/microcontroller/32-bit-psoc-arm-cortex/32-bit-psoc-edge-arm) parts
@@ -51,6 +52,7 @@ See the [Design and implementation](docs/design_and_implementation.md) for the f
 - [PSOC&trade; Edge E84 AI Kit](https://www.infineon.com/KIT_PSE84_AI) (`KIT_PSE84_AI`) – Default value of `TARGET`
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC2`)
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC4`)
+- [PSOC&trade; Edge E84 HMI Kit](https://www.infineon.com/KIT_PSE84_HMI) (`KIT_PSE84_HMI`)
 
 
 ## Hardware setup
@@ -59,7 +61,7 @@ This example uses the board's default configuration. See the kit user guide to e
 
 Ensure the following jumper and pin configuration on board.
 - BOOT SW must be in the HIGH/ON position
-- J20 and J21 must be in the tristate/not connected (NC) position
+- J20 and J21 must be in the tristate/not connected (NC) position for the PSOC&trade; Edge E84 Evaluation Kit
 
 > **Note:** This hardware setup is not required for the KIT_PSE84_AI kit.
 
@@ -72,7 +74,7 @@ Install a terminal emulator if you do not have one. Instructions in this documen
 
 This example requires no additional software or tools.
 
-> **Note:** This code example currently does not work with the custom BSP name for the `KIT_PSE84_EVAL_EPC2`, `KIT_PSE84_EVAL_EPC4`, and `KIT_PSE84_AI` kits. If you want to change the BSP name to a non-default value, ensure to update the custom BSP name in *Makefile* under the relevant section. The build fails if you do not update the custom BSP name.
+> **Note:** This code example currently does not work with the custom BSP name for the `KIT_PSE84_EVAL_EPC2`, `KIT_PSE84_EVAL_EPC4`, `KIT_PSE84_AI` and `KIT_PSE84_HMI` kits. If you want to change the BSP name to a non-default value, ensure to update the custom BSP name in *Makefile* under the relevant section. The build fails if you do not update the custom BSP name.
 
 
 ## Operation
@@ -102,7 +104,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 > **Note 2:** Evaluating the Fall Detection Model on EVK could be physically challenging due to the form factor of the baseboard as the EVK needs to be physically strapped to the hand for accurate detection.
 <br>
 
-> **Note 3:** Currently, Gesture Classification model is supported only on the PSOC&trade; Edge AI kit.
+> **Note 3:** Currently, Gesture Classification model is supported only on the PSOC&trade; Edge AI kit and PSOC&trade; Edge HMI kit.
 <br>
 
 > **Note 4:** For Gesture Classification model, place the kit at a distance of approximately 60 centimeters away from you for the gestures to be detected correctly.
@@ -127,9 +129,15 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
 6. For the Gesture Classification model, see **Figure 2** for recognized hand gestures
 
-   **Figure 2. Terminal output for recognized hand gestures**
+   The following gestures are applicable only for the `KIT_PSE84_AI` and `KIT_PSE84_HMI`kits.
 
-   The following gestures are applicable only for the `KIT_PSE84_AI` kit.
+   > **Note:** For Gesture Classification model, The PSOC&trade; Edge HMI kit must be placed in as shown in below figure to align with the radar sensor's orientation.
+         
+      **Figure 2. Placement of KTI_PSE84_HMI for Gesture Classification model**
+
+      ![](images/hmi-kit-orientation.png)
+
+   **Figure 3. Terminal output for recognized hand gestures**
 
    **Push gesture** | **Swipe left gesture** | **Swipe right gesture** | **Swipe up gesture** | **Swipe down gesture**
    ------------------------| ------------------------| ------------------------ | --------------------- | -----------------------
@@ -141,7 +149,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
    > **Note:** In the reference video, the PSOC&trade; Edge AI kit is powered through an external battery pack instead of USB
 
-   **Figure 3. Triggering fall condition using Fall Detection model**
+   **Figure 4. Triggering fall condition using Fall Detection model**
 
    ![](images/fall.gif)
 
@@ -149,9 +157,10 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
    Kit  |  Available models
    :-------- | :-------------
-   `KIT_PSE84_AI` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Gesture Classification, Fall Detection, 
+   `KIT_PSE84_AI` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Gesture Classification, Fall Detection
    `KIT_PSE84_EVAL_EPC2` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Fall Detection
    `KIT_PSE84_EVAL_EPC4` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Fall Detection
+   `KIT_PSE84_HMI` | Cough Detection, Factory Alarm Detection, Baby Cry Detection, Siren Detection, Direction of Arrival (Sound), Gesture Classification, Fall Detection
 
    <br>
 
@@ -186,7 +195,7 @@ Document title: *CE242030* – *PSOC&trade; Edge MCU: DEEPCRAFT&trade; Ready Mod
  1.2.0   | Update the PDM mic settings
  1.3.0   | Added Siren Detection model <br> Added ARM and LLVM_ARM support for Fall Detection model
  1.3.1   | Minor README update
-
+ 1.4.0   | Updated the Baby Cry run time to 1 hour <br> Added support for KIT_PSE84_HMI
 <br>
 
 
@@ -198,7 +207,7 @@ PSOC&trade;, formerly known as PSoC&trade;, is a trademark of Infineon Technolog
 
 ---------------------------------------------------------
 
-© Cypress Semiconductor Corporation, 2025. This document is the property of Cypress Semiconductor Corporation, an Infineon Technologies company, and its affiliates ("Cypress").  This document, including any software or firmware included or referenced in this document ("Software"), is owned by Cypress under the intellectual property laws and treaties of the United States and other countries worldwide.  Cypress reserves all rights under such laws and treaties and does not, except as specifically stated in this paragraph, grant any license under its patents, copyrights, trademarks, or other intellectual property rights.  If the Software is not accompanied by a license agreement and you do not otherwise have a written agreement with Cypress governing the use of the Software, then Cypress hereby grants you a personal, non-exclusive, nontransferable license (without the right to sublicense) (1) under its copyright rights in the Software (a) for Software provided in source code form, to modify and reproduce the Software solely for use with Cypress hardware products, only internally within your organization, and (b) to distribute the Software in binary code form externally to end users (either directly or indirectly through resellers and distributors), solely for use on Cypress hardware product units, and (2) under those claims of Cypress's patents that are infringed by the Software (as provided by Cypress, unmodified) to make, use, distribute, and import the Software solely for use with Cypress hardware products.  Any other use, reproduction, modification, translation, or compilation of the Software is prohibited.
+© Cypress Semiconductor Corporation, 2026. This document is the property of Cypress Semiconductor Corporation, an Infineon Technologies company, and its affiliates ("Cypress").  This document, including any software or firmware included or referenced in this document ("Software"), is owned by Cypress under the intellectual property laws and treaties of the United States and other countries worldwide.  Cypress reserves all rights under such laws and treaties and does not, except as specifically stated in this paragraph, grant any license under its patents, copyrights, trademarks, or other intellectual property rights.  If the Software is not accompanied by a license agreement and you do not otherwise have a written agreement with Cypress governing the use of the Software, then Cypress hereby grants you a personal, non-exclusive, nontransferable license (without the right to sublicense) (1) under its copyright rights in the Software (a) for Software provided in source code form, to modify and reproduce the Software solely for use with Cypress hardware products, only internally within your organization, and (b) to distribute the Software in binary code form externally to end users (either directly or indirectly through resellers and distributors), solely for use on Cypress hardware product units, and (2) under those claims of Cypress's patents that are infringed by the Software (as provided by Cypress, unmodified) to make, use, distribute, and import the Software solely for use with Cypress hardware products.  Any other use, reproduction, modification, translation, or compilation of the Software is prohibited.
 <br>
 TO THE EXTENT PERMITTED BY APPLICABLE LAW, CYPRESS MAKES NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, WITH REGARD TO THIS DOCUMENT OR ANY SOFTWARE OR ACCOMPANYING HARDWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  No computing device can be absolutely secure.  Therefore, despite security measures implemented in Cypress hardware or software products, Cypress shall have no liability arising out of any security breach, such as unauthorized access to or use of a Cypress product. CYPRESS DOES NOT REPRESENT, WARRANT, OR GUARANTEE THAT CYPRESS PRODUCTS, OR SYSTEMS CREATED USING CYPRESS PRODUCTS, WILL BE FREE FROM CORRUPTION, ATTACK, VIRUSES, INTERFERENCE, HACKING, DATA LOSS OR THEFT, OR OTHER SECURITY INTRUSION (collectively, "Security Breach").  Cypress disclaims any liability relating to any Security Breach, and you shall and hereby do release Cypress from any claim, damage, or other liability arising from any Security Breach.  In addition, the products described in these materials may contain design defects or errors known as errata which may cause the product to deviate from published specifications. To the extent permitted by applicable law, Cypress reserves the right to make changes to this document without further notice. Cypress does not assume any liability arising out of the application or use of any product or circuit described in this document. Any information provided in this document, including any sample design information or programming code, is provided only for reference purposes.  It is the responsibility of the user of this document to properly design, program, and test the functionality and safety of any application made of this information and any resulting product.  "High-Risk Device" means any device or system whose failure could cause personal injury, death, or property damage.  Examples of High-Risk Devices are weapons, nuclear installations, surgical implants, and other medical devices.  "Critical Component" means any component of a High-Risk Device whose failure to perform can be reasonably expected to cause, directly or indirectly, the failure of the High-Risk Device, or to affect its safety or effectiveness.  Cypress is not liable, in whole or in part, and you shall and hereby do release Cypress from any claim, damage, or other liability arising from any use of a Cypress product as a Critical Component in a High-Risk Device. You shall indemnify and hold Cypress, including its affiliates, and its directors, officers, employees, agents, distributors, and assigns harmless from and against all claims, costs, damages, and expenses, arising out of any claim, including claims for product liability, personal injury or death, or property damage arising from any use of a Cypress product as a Critical Component in a High-Risk Device. Cypress products are not intended or authorized for use as a Critical Component in any High-Risk Device except to the limited extent that (i) Cypress's published data sheet for the product explicitly states Cypress has qualified the product for use in a specific High-Risk Device, or (ii) Cypress has given you advance written authorization to use the product as a Critical Component in the specific High-Risk Device and you have signed a separate indemnification agreement.
 <br>

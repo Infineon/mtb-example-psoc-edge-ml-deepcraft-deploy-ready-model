@@ -7,33 +7,33 @@
 * Related Document : See README.md
 *
 *****************************************************************************
- * (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
- * Technologies AG. All rights reserved.
- * This software, associated documentation and materials ("Software") is
- * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
- * and is protected by and subject to worldwide patent protection, worldwide
- * copyright laws, and international treaty provisions. Therefore, you may use
- * this Software only as provided in the license agreement accompanying the
- * software package from which you obtained this Software. If no license
- * agreement applies, then any use, reproduction, modification, translation, or
- * compilation of this Software is prohibited without the express written
- * permission of Infineon.
- *
- * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
- * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
- * THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
- * SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
- * Infineon reserves the right to make changes to the Software without notice.
- * You are responsible for properly designing, programming, and testing the
- * functionality and safety of your intended application of the Software, as
- * well as complying with any legal requirements related to its use. Infineon
- * does not guarantee that the Software will be free from intrusion, data theft
- * or loss, or other breaches ("Security Breaches"), and Infineon shall have
- * no liability arising out of any Security Breaches. Unless otherwise
- * explicitly approved by Infineon, the Software may not be used in any
- * application where a failure of the Product or any consequences of the use
- * thereof can reasonably be expected to result in personal injury.
+* (c) 2025-2026, Infineon Technologies AG, or an affiliate of Infineon
+* Technologies AG. All rights reserved.
+* This software, associated documentation and materials ("Software") is
+* owned by Infineon Technologies AG or one of its affiliates ("Infineon")
+* and is protected by and subject to worldwide patent protection, worldwide
+* copyright laws, and international treaty provisions. Therefore, you may use
+* this Software only as provided in the license agreement accompanying the
+* software package from which you obtained this Software. If no license
+* agreement applies, then any use, reproduction, modification, translation, or
+* compilation of this Software is prohibited without the express written
+* permission of Infineon.
+*
+* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+* INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
+* THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
+* SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
+* Infineon reserves the right to make changes to the Software without notice.
+* You are responsible for properly designing, programming, and testing the
+* functionality and safety of your intended application of the Software, as
+* well as complying with any legal requirements related to its use. Infineon
+* does not guarantee that the Software will be free from intrusion, data theft
+* or loss, or other breaches ("Security Breaches"), and Infineon shall have
+* no liability arising out of any Security Breaches. Unless otherwise
+* explicitly approved by Infineon, the Software may not be used in any
+* application where a failure of the Product or any consequences of the use
+* thereof can reasonably be expected to result in personal injury.
 *****************************************************************************/
 
 /*******************************************************************************
@@ -78,11 +78,23 @@
 /*****************************************************************************
  * Macros
  *****************************************************************************/
+#ifdef USE_KIT_PSE84_HMI
+#define RADAR_SPI_CONTROLLER_IRQ          (CYBSP_SPI_RADAR_CONTROLLER_IRQ)
+#define RADAR_SPI_CONTROLLER_HW           (CYBSP_SPI_RADAR_CONTROLLER_HW)
+#define RADAR_SPI_CONTROLLER_config       (CYBSP_SPI_RADAR_CONTROLLER_config)
+#define RADAR_SPI_SLAVE_SELECT            (CY_SCB_SPI_SLAVE_SELECT1)
+#else
+#define RADAR_SPI_CONTROLLER_IRQ          (CYBSP_SPI_CONTROLLER_IRQ)
+#define RADAR_SPI_CONTROLLER_HW           (CYBSP_SPI_CONTROLLER_HW)
+#define RADAR_SPI_CONTROLLER_config       (CYBSP_SPI_CONTROLLER_config)
+#define RADAR_SPI_SLAVE_SELECT            (CY_SCB_SPI_SLAVE_SELECT0)
+#endif
+
 #define INIT_SUCCESS            (0UL)
 #define INIT_FAILURE            (1UL)
 #define XENSIV_BGT60TRXX_IRQ_PRIORITY                      (1U)
 
-#define SPI_INTR_NUM        ((IRQn_Type) CYBSP_SPI_CONTROLLER_IRQ)
+#define SPI_INTR_NUM        ((IRQn_Type) RADAR_SPI_CONTROLLER_IRQ)
 #define SPI_INTR_PRIORITY   (2U)
 
 #define XENSIV_BGT60TRXX_SPI_FREQUENCY      (12000000UL)
@@ -170,7 +182,7 @@ void xensiv_bgt60trxx_interrupt_handler(void);
 *******************************************************************************/
 void mSPI_Interrupt(void)
 {
-    Cy_SCB_SPI_Interrupt(CYBSP_SPI_CONTROLLER_HW, &SPI_context);
+    Cy_SCB_SPI_Interrupt(RADAR_SPI_CONTROLLER_HW, &SPI_context);
 }
 
 /*******************************************************************************
@@ -251,7 +263,6 @@ void deinterleave_antennas(uint16_t * buffer_ptr)
 void radar_task(void *pvParameters)
 {
     (void)pvParameters;
-    cy_rslt_t result = CY_RSLT_SUCCESS;
 
     if (radar_init() != 0)
     {
@@ -459,7 +470,7 @@ static int32_t radar_init(void)
     cy_rslt_t result = CY_RSLT_SUCCESS;
     uint32_t status = INIT_SUCCESS;
     /* Enable the RADAR. */
-    sensor.iface.scb_inst = CYBSP_SPI_CONTROLLER_HW;
+    sensor.iface.scb_inst = RADAR_SPI_CONTROLLER_HW;
     sensor.iface.spi = &SPI_context;
     sensor.iface.sel_port = CYBSP_RSPI_CS_PORT;
     sensor.iface.sel_pin = CYBSP_RSPI_CS_PIN;
@@ -472,7 +483,7 @@ static int32_t radar_init(void)
     irq_cfg.intrSrc = sensor.iface.irq_num;
     irq_cfg.intrPriority = XENSIV_BGT60TRXX_IRQ_PRIORITY;
 
-    init_status = Cy_SCB_SPI_Init(CYBSP_SPI_CONTROLLER_HW, &CYBSP_SPI_CONTROLLER_config, &SPI_context);
+    init_status = Cy_SCB_SPI_Init(RADAR_SPI_CONTROLLER_HW, &RADAR_SPI_CONTROLLER_config, &SPI_context);
 
     /* If the initialization fails, update status */
     if ( CY_SCB_SPI_SUCCESS != init_status )
@@ -492,9 +503,9 @@ static int32_t radar_init(void)
         NVIC_EnableIRQ(SPI_INTR_NUM);
 
         /* Set active target select to line 0 */
-        Cy_SCB_SPI_SetActiveSlaveSelect(CYBSP_SPI_CONTROLLER_HW, CY_SCB_SPI_SLAVE_SELECT1);
+        Cy_SCB_SPI_SetActiveSlaveSelect(RADAR_SPI_CONTROLLER_HW, RADAR_SPI_SLAVE_SELECT);
         /* Enable SPI Controller block. */
-        Cy_SCB_SPI_Enable(CYBSP_SPI_CONTROLLER_HW);
+        Cy_SCB_SPI_Enable(RADAR_SPI_CONTROLLER_HW);
     }
     
     /* Reduce drive strength to improve EMI */
@@ -504,10 +515,16 @@ static int32_t radar_init(void)
     Cy_GPIO_SetDriveSel(CYBSP_RSPI_CLK_PORT, CYBSP_RSPI_CLK_PIN, CY_GPIO_DRIVE_1_8);
 
     result = xensiv_bgt60trxx_mtb_init(&sensor, register_list, XENSIV_BGT60TRXX_CONF_NUM_REGS);
-    CY_ASSERT(result == CY_RSLT_SUCCESS);
+    if (CY_RSLT_SUCCESS != result)
+    {
+        CY_ASSERT(0);
+    }
 
     result = xensiv_bgt60trxx_mtb_interrupt_init(&sensor, NUM_SAMPLES_PER_FRAME);
-    CY_ASSERT(result == CY_RSLT_SUCCESS);
+    if (CY_RSLT_SUCCESS != result)
+    {
+        CY_ASSERT(0);
+    }
     
     Cy_SysInt_Init(&irq_cfg, xensiv_bgt60trxx_interrupt_handler);
 
