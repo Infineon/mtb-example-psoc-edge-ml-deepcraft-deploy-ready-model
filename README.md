@@ -22,7 +22,7 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-ml-deepcraft-deploy-ready-model)
 
-[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzYXNoaXJla2hhLnN1ZGFyc2FuYW1AaW5maW5lb24uY29tIiwiRG9jIHZlcnNpb24iOiIxLjQuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDIwMzAiLCJTcGVjIE51bWJlciI6IjAwMi00MjAzMCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBERUVQQ1JBRlQmdHJhZGU7IFJlYWR5IE1vZGVsIGRlcGxveW1lbnQiLCJyaWQiOiJzYXNoaXJla2hhLnN1ZGFyc2FuYW1AaW5maW5lb24uY29tIiwiRG9jIHZlcnNpb24iOiIxLjQuMSIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiUFNPQyJ9)
 
 See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
@@ -45,6 +45,7 @@ See the [Design and implementation](docs/design_and_implementation.md) for the f
 > **Notes:**
 - IAR is not supported by the TensorFlow Lite for Microcontrollers (TFLM) library
 - This code example fails to build in RELEASE mode with the GCC_ARM toolchain v14.2.1 as it does not recognize some of the Helium instructions of the CMSIS-DSP library. This issue is not present in the ARM&reg; Compiler for Embedded (armclang)
+- This code example currently supports the VFP_SELECT option "hardfp" only. Setting "softfp" may cause build failure.
 
 
 ## Supported kits (make variable 'TARGET')
@@ -133,7 +134,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
    > **Note:** For Gesture Classification model, The PSOC&trade; Edge HMI kit must be placed in as shown in below figure to align with the radar sensor's orientation.
          
-      **Figure 2. Placement of KTI_PSE84_HMI for Gesture Classification model**
+      **Figure 2. Placement of KIT_PSE84_HMI for Gesture Classification model**
 
       ![](images/hmi-kit-orientation.png)
 
@@ -196,6 +197,7 @@ Document title: *CE242030* – *PSOC&trade; Edge MCU: DEEPCRAFT&trade; Ready Mod
  1.3.0   | Added Siren Detection model <br> Added ARM and LLVM_ARM support for Fall Detection model
  1.3.1   | Minor README update
  1.4.0   | Updated the Baby Cry run time to 1 hour <br> Added support for KIT_PSE84_HMI
+ 1.4.1   | Added a check for unsupported build configuration.
 <br>
 
 
